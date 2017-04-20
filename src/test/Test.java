@@ -1,5 +1,7 @@
 package test;
 
+import java.awt.geom.AffineTransform;
+import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileFilter;
@@ -70,7 +72,19 @@ public class Test {
 	    try {
 	      result = new MultiFormatReader().decode(bitmap);
 	    } catch (ReaderException re) {
-	      return re.toString();
+	      AffineTransform at= new AffineTransform();
+	      at.translate(2*image.getWidth(), -2*image.getWidth());
+	      at.rotate(Math.PI/2, image.getWidth()/2, image.getHeight()/2);
+	      AffineTransformOp op=new AffineTransformOp(at, AffineTransformOp.TYPE_BILINEAR);
+	      BufferedImage image2 = new BufferedImage(image.getHeight(), image.getWidth(), image.getType());
+	      op.filter(image, image2);
+	      source = new BufferedImageLuminanceSource(image2);
+	      bitmap = new BinaryBitmap(new HybridBinarizer(source));
+	      try {
+	        result = new MultiFormatReader().decode(bitmap);
+	      } catch (ReaderException re2) {
+	        return re2.toString();
+	      }
 	    }
 	    return String.valueOf(result.getBarcodeFormat().name() + " - " + result.getText());
 	  }
